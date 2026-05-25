@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
-const apiUrl = process.env.NEXT_PUBLIC_NEWS_API_URL
+const serverUrl = process.env.NEXT_PUBLIC_NEWS_API_URL || 'http://localhost:3333/'
+const apiUrl = serverUrl.endsWith('/api/news') ? serverUrl : `${serverUrl.replace(/\/+$/, '')}/api/news`
 
 function formatDate(value) {
   if (!value) {
