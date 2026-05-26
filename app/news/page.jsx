@@ -86,7 +86,45 @@ export default async function NewsPage({ searchParams }) {
         </div>
 
         <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40">
-          <div className="overflow-x-auto">
+          <div className="md:hidden">
+            {error ? (
+              <div className="px-4 py-6 text-sm text-rose-200">
+                Não foi possível carregar as notícias no momento. {error}
+              </div>
+            ) : news.length === 0 ? (
+              <div className="px-4 py-6 text-sm text-slate-200/70">Nenhuma notícia encontrada.</div>
+            ) : (
+              <div className="divide-y divide-white/10">
+                {news.map((item, index) => (
+                  <article key={item.id ?? `${item.title ?? 'news'}-${index}`} className="px-4 py-4 odd:bg-white/[0.03]">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <p className="max-w-[62%] text-sm font-semibold uppercase tracking-[0.08em] text-blue-200">
+                        {item.source_name ?? '-'}
+                      </p>
+                      <p className="shrink-0 text-right text-xs leading-5 text-slate-300/80">
+                        {formatDate(item.published_at)}
+                      </p>
+                    </div>
+
+                    <p className="text-xl font-semibold leading-8 text-slate-50">{item.title ?? '-'}</p>
+
+                    {item.link ? (
+                      <a
+                        className="mt-3 inline-flex rounded-xl border border-blue-300/40 bg-blue-400/10 px-3 py-2 text-sm font-medium text-blue-200 transition hover:bg-blue-400/20"
+                        href={item.link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Abrir notícia
+                      </a>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="min-w-full table-fixed border-separate border-spacing-0 text-left">
               <colgroup>
                 <col className="w-[24%]" />
