@@ -3,6 +3,11 @@ export const dynamic = 'force-dynamic'
 const serverUrl = process.env.NEXT_PUBLIC_NEWS_API_URL || 'http://localhost:3333/'
 const apiUrl = serverUrl.endsWith('/api/news') ? serverUrl : `${serverUrl.replace(/\/+$/, '')}/api/news`
 
+function getParam(value) {
+  if (Array.isArray(value)) return value[0] ?? ''
+  return typeof value === 'string' ? value : ''
+}
+
 function formatDate(value) {
   if (!value) {
     return '-'
@@ -20,9 +25,14 @@ function formatDate(value) {
   }).format(date)
 }
 
-async function getNews() {
+async function getNews({ page, limit } = {}) {
   try {
-    const response = await fetch(apiUrl, { cache: 'no-store' })
+    const url = new URL(apiUrl)
+
+    if (page) url.searchParams.set('page', String(page))
+    if (limit) url.searchParams.set('limit', String(limit))
+
+    const response = await fetch(url.toString(), { cache: 'no-store' })
 
     if (!response.ok) {
       throw new Error(`Falha ao carregar notícias: ${response.status}`)
@@ -31,19 +41,24 @@ async function getNews() {
     const data = await response.json()
 
     return {
-      news: Array.isArray(data) ? data : [],
+      news: Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [],
+      pagination: Array.isArray(data) ? null : data?.pagination ?? null,
       error: null,
     }
   } catch (error) {
     return {
       news: [],
+      pagination: null,
       error: error instanceof Error ? error.message : 'Falha ao carregar notícias.',
     }
   }
 }
 
-export default async function HomePage() {
-  const { news, error } = await getNews()
+export default async function HomePage({ searchParams }) {
+  const pageParam = parseInt(getParam(searchParams?.page) || '1', 10) || 1
+  const limitParam = getParam(searchParams?.limit) || '20'
+
+  const { news, pagination, error } = await getNews({ page: pageParam, limit: limitParam || undefined })
 
   return (
     <main className="min-h-screen bg-atmosphere px-5 py-8 text-slate-50 md:px-8 lg:px-10">
@@ -131,6 +146,36 @@ export default async function HomePage() {
             </table>
           </div>
         </div>
+
+        <div className="mt-4 flex items-center justify-end gap-3">
+          {pageParam > 1 ? (
+            <a
+              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
+              href={`/?page=${pageParam - 1}${limitParam ? `&limit=${encodeURIComponent(limitParam)}` : ''}`}
+            >
+              ← Anterior
+            </a>
+          ) : (
+            <span className="rounded-2xl border border-white/10 bg-white/3 px-4 py-2 text-sm font-semibold text-slate-400">← Anterior</span>
+          )}
+
+          {pagination?.hasNextPage ?? news.length > 0 ? (
+            <a
+              className="rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-accentDeep"
+              href={`/?page=${pageParam + 1}${limitParam ? `&limit=${encodeURIComponent(limitParam)}` : ''}`}
+            >
+              Próxima →
+            </a>
+          ) : (
+            <span className="rounded-2xl border border-white/10 bg-white/3 px-4 py-2 text-sm font-semibold text-slate-400">Próxima →</span>
+          )}
+        </div>
+
+        {pagination ? (
+          <p className="mt-3 text-right text-xs text-slate-200/60">
+            Página {pagination.page} de {pagination.totalPages} · {pagination.total} notícia(s)
+          </p>
+        ) : null}
       </section>
     </main>
   )
