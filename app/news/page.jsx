@@ -33,12 +33,13 @@ function formatDate(value) {
   }
 }
 
-async function getNews({ page, limit } = {}) {
+async function getNews({ page, limit, date } = {}) {
   try {
     const url = new URL(apiUrl)
 
     if (page) url.searchParams.set('page', String(page))
     if (limit) url.searchParams.set('limit', String(limit))
+    if (date) url.searchParams.set('date', String(date))
 
     const response = await fetch(url.toString(), { cache: 'no-store' })
 
@@ -65,8 +66,29 @@ async function getNews({ page, limit } = {}) {
 export default async function NewsPage({ searchParams }) {
   const pageParam = parseInt(getParam(searchParams?.page) || '1', 10) || 1
   const limitParam = getParam(searchParams?.limit) || '20'
+  const dateParam = getParam(searchParams?.date)
 
-  const { news, pagination, error } = await getNews({ page: pageParam, limit: limitParam || undefined })
+  const { news, pagination, error } = await getNews({
+    page: pageParam,
+    limit: limitParam || undefined,
+    date: dateParam || undefined,
+  })
+
+  const buildNewsHref = (targetPage, nextDate = dateParam) => {
+    const params = new URLSearchParams()
+
+    params.set('page', String(targetPage))
+
+    if (limitParam) {
+      params.set('limit', limitParam)
+    }
+
+    if (nextDate) {
+      params.set('date', nextDate)
+    }
+
+    return `/news?${params.toString()}`
+  }
 
   return (
     <main className="min-h-screen bg-atmosphere px-5 py-8 text-slate-50 md:px-8 lg:px-10">
@@ -94,6 +116,39 @@ export default async function NewsPage({ searchParams }) {
         </div>
 
         <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/40">
+          <div className="border-b border-white/10 px-4 py-4 md:px-6">
+            <form action="/news" method="get" className="ml-auto flex w-full max-w-md flex-col items-end gap-2 text-right">
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <input type="hidden" name="page" value="1" />
+                <input type="hidden" name="limit" value={limitParam} />
+                <input
+                  type="date"
+                  name="date"
+                  defaultValue={dateParam}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-blue-300/70 focus:ring-2 focus:ring-blue-400/30 sm:w-40"
+                />
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-accentDeep"
+                  >
+                    Filtrar
+                  </button>
+
+                  {dateParam ? (
+                    <a
+                      href={buildNewsHref(1, '')}
+                      className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
+                    >
+                      Limpar
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </form>
+          </div>
+
           <div className="md:hidden">
             {error ? (
               <div className="px-4 py-6 text-sm text-rose-200">
@@ -197,7 +252,7 @@ export default async function NewsPage({ searchParams }) {
           {pageParam > 1 ? (
             <a
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
-              href={`/news?page=${pageParam - 1}${limitParam ? `&limit=${encodeURIComponent(limitParam)}` : ''}`}
+              href={buildNewsHref(pageParam - 1)}
             >
               ← Anterior
             </a>
@@ -210,7 +265,7 @@ export default async function NewsPage({ searchParams }) {
           {pagination?.hasNextPage ?? news.length > 0 ? (
             <a
               className="rounded-2xl bg-accent px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-accentDeep"
-              href={`/news?page=${pageParam + 1}${limitParam ? `&limit=${encodeURIComponent(limitParam)}` : ''}`}
+              href={buildNewsHref(pageParam + 1)}
             >
               Próxima →
             </a>
