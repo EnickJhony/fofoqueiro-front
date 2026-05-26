@@ -33,13 +33,14 @@ function formatDate(value) {
   }
 }
 
-async function getNews({ page, limit, date } = {}) {
+async function getNews({ page, limit, date, title } = {}) {
   try {
     const url = new URL(apiUrl)
 
     if (page) url.searchParams.set('page', String(page))
     if (limit) url.searchParams.set('limit', String(limit))
     if (date) url.searchParams.set('date', String(date))
+    if (title) url.searchParams.set('title', String(title))
 
     const response = await fetch(url.toString(), { cache: 'no-store' })
 
@@ -67,14 +68,16 @@ export default async function NewsPage({ searchParams }) {
   const pageParam = parseInt(getParam(searchParams?.page) || '1', 10) || 1
   const limitParam = getParam(searchParams?.limit) || '20'
   const dateParam = getParam(searchParams?.date)
+  const titleParam = getParam(searchParams?.title)
 
   const { news, pagination, error } = await getNews({
     page: pageParam,
     limit: limitParam || undefined,
     date: dateParam || undefined,
+    title: titleParam || undefined,
   })
 
-  const buildNewsHref = (targetPage, nextDate = dateParam) => {
+  const buildNewsHref = (targetPage, nextDate = dateParam, nextTitle = titleParam) => {
     const params = new URLSearchParams()
 
     params.set('page', String(targetPage))
@@ -85,6 +88,10 @@ export default async function NewsPage({ searchParams }) {
 
     if (nextDate) {
       params.set('date', nextDate)
+    }
+
+    if (nextTitle) {
+      params.set('title', nextTitle)
     }
 
     return `/news?${params.toString()}`
@@ -122,6 +129,13 @@ export default async function NewsPage({ searchParams }) {
                 <input type="hidden" name="page" value="1" />
                 <input type="hidden" name="limit" value={limitParam} />
                 <input
+                  type="text"
+                  name="title"
+                  defaultValue={titleParam}
+                  placeholder="Filtrar por título"
+                  className="w-full rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-400 focus:border-blue-300/70 focus:ring-2 focus:ring-blue-400/30 sm:min-w-0 sm:flex-1"
+                />
+                <input
                   type="date"
                   name="date"
                   defaultValue={dateParam}
@@ -136,9 +150,9 @@ export default async function NewsPage({ searchParams }) {
                     Filtrar
                   </button>
 
-                  {dateParam ? (
+                  {dateParam || titleParam ? (
                     <a
-                      href={buildNewsHref(1, '')}
+                      href={buildNewsHref(1, '', '')}
                       className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10"
                     >
                       Limpar
