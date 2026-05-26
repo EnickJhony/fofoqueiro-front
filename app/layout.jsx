@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Fofoqueiro Front',
+  title: 'Fofoqueiro Amazonas',
   description: 'App frontend básico em Next.js com Tailwind',
 }
 

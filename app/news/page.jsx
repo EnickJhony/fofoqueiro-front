@@ -66,14 +66,14 @@ export default async function NewsPage({ searchParams }) {
         <div className="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-blue-300">
-              Fofoqueiro Front
+              Fofoqueiro Amazonas
             </p>
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               Notícias coletadas dos portais da cidade
             </h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-slate-200/80 sm:text-lg">
-              Esse frontend consome a rota <span className="font-semibold text-slate-50">{apiUrl}</span> e mostra a lista
-              de notícias em uma tabela.
+              Essa aplicação mostra as noticias dos seguintes portais: 
+              <strong> Amazonas Atual</strong>, <strong>Amazonas 1</strong>, <strong>D24AM</strong>, <strong>G1</strong>, <strong>G1 - Amazonas</strong>, <strong>Manaus Alerta</strong>, <strong>Portal do Holanda</strong> e <strong>Portal em Tempo</strong>.
             </p>
           </div>
 
