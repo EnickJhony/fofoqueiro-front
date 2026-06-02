@@ -139,7 +139,9 @@ export default async function NewsPage({ searchParams }) {
         <div className="flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-blue-300">
-              Fofoqueiro Amazonas
+              <a href="/news" className="hover:underline">
+                Fofoqueiro Amazonas
+              </a>
             </p>
             <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
               Notícias coletadas dos portais da cidade
